@@ -12,8 +12,11 @@
 @interface ViewController : UIViewController <UIGestureRecognizerDelegate, MKMapViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *drawOverlayButton;
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *deleteOverlayButton;
 @property (weak, nonatomic) IBOutlet MKMapView *mapView;
 
 - (IBAction)didTouchUpInsideDrawButton:(id)sender;
+- (IBAction)deleteOverlay:(id)sender;
+
 
 @end

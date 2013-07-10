@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="2.0" toolsVersion="3084" systemVersion="12D78" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="rxA-Vf-n2G">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="2.0" toolsVersion="3084" systemVersion="12E55" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="rxA-Vf-n2G">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="2083"/>
     </dependencies>
@@ -27,6 +27,11 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Map" id="Jl3-tG-yD0">
+                        <barButtonItem key="leftBarButtonItem" title="Delete overlay" id="9f5-GX-dcZ">
+                            <connections>
+                                <action selector="deleteOverlay:" destination="2" id="YU9-OG-xAu"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Draw overlay" id="s9h-E8-UjK">
                             <connections>
                                 <action selector="didTouchUpInsideDrawButton:" destination="2" id="Pd4-6d-qrr"/>
@@ -34,6 +39,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="deleteOverlayButton" destination="9f5-GX-dcZ" id="Ufq-D2-Nx2"/>
                         <outlet property="drawOverlayButton" destination="s9h-E8-UjK" id="Oih-tc-aaf"/>
                         <outlet property="mapView" destination="eUl-qC-rqI" id="Kn5-hr-vwW"/>
                     </connections>
@@ -61,6 +67,21 @@
             <point key="canvasLocation" x="232" y="138"/>
         </scene>
     </scenes>
+    <classes>
+        <class className="NSLayoutConstraint" superclassName="NSObject">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/NSLayoutConstraint.h"/>
+        </class>
+        <class className="ViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/ViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="deleteOverlay:"/>
+                <relationship kind="action" name="didTouchUpInsideDrawButton:"/>
+                <relationship kind="outlet" name="deleteOverlayButton" candidateClass="UIBarButtonItem"/>
+                <relationship kind="outlet" name="drawOverlayButton" candidateClass="UIBarButtonItem"/>
+                <relationship kind="outlet" name="mapView" candidateClass="MKMapView"/>
+            </relationships>
+        </class>
+    </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>

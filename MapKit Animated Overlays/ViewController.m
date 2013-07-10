@@ -16,6 +16,7 @@
 @property (nonatomic, weak) MKPolyline *polyLine;                  // used during the drawing of the polyline, but discarded once the MKPolygon is added
 @property (nonatomic, weak) MKPointAnnotation *previousAnnotation; // if you're using other annotations, you might want to use a custom annotation type here
 @property (nonatomic) BOOL isDrawingPolygon;
+@property (nonatomic) BOOL isDelete;
 
 @end
 
@@ -28,11 +29,30 @@
     self.mapView.userTrackingMode = MKUserTrackingModeFollow;
     
     self.annotations = [[NSMutableArray alloc] init];
+    self.annotationsMed = [[NSMutableArray alloc] init];
+    self.coordinates = [[NSMutableArray alloc] init];
     
     [self.mapView setDelegate: self];
+    self.isDelete = NO;
     
 }
 
+- (IBAction)deleteOverlay:(id)sender
+{
+    
+    if (!self.isDelete)
+    {
+        self.isDelete = YES;
+        [self.deleteOverlayButton setTitle:@"Done"];
+    }
+    
+    else
+    {
+       self.isDelete = NO;
+        [self.deleteOverlayButton setTitle:@"Delete Overlay"];
+    }
+    
+}
 
 - (IBAction)didTouchUpInsideDrawButton:(id)sender
 {
@@ -42,8 +62,15 @@
         // let's initialize everything
         
         self.isDrawingPolygon = YES;
+        self.isDelete = NO;
         
-        self.coordinates = [NSMutableArray array];
+        [self.mapView removeOverlays:self.mapView.overlays];
+        [self.mapView removeAnnotations:self.annotations];
+        [self.mapView removeAnnotations:self.annotationsMed];
+        
+        [self.annotations removeAllObjects];
+        [self.annotationsMed removeAllObjects];
+        [self.coordinates removeAllObjects];
         
         // turn off map interaction so touches can fall through to
         // here
@@ -53,6 +80,7 @@
         // change our "draw overlay" button to "done"
         
         [self.drawOverlayButton setTitle:@"Done"];
+        [self.deleteOverlayButton setTitle:@"Delete Overlay"];
     }
     else
     {
@@ -75,12 +103,25 @@
             for (NSInteger i = 0; i < numberOfPoints; i++)
                 points[i] = [self.coordinates[i] MKCoordinateValue];
             [self.mapView addOverlay:[MKPolygon polygonWithCoordinates:points count:numberOfPoints]];
+            
+            if (self.polyLine)
+                [self.mapView removeOverlay:self.polyLine];
+            
+            [self puntosMedios];
         }
-        
+        else
+        {
+            
+            [self.mapView removeOverlays:self.mapView.overlays];
+            [self.mapView removeAnnotations:self.annotations];
+            [self.mapView removeAnnotations:self.annotationsMed];
+            
+            [self.annotations removeAllObjects];
+            [self.annotationsMed removeAllObjects];
+            [self.coordinates removeAllObjects];
+        }
         // and if we had a polyline, let's remove it
         
-        if (self.polyLine)
-            [self.mapView removeOverlay:self.polyLine];
         
         // change our "draw overlay" button to "done"
         
@@ -142,15 +183,15 @@
     {
         if ([self isClosingPolygonWithCoordinate:coordinate])
         {
+            [self.coordinates removeLastObject];
             [self didTouchUpInsideDrawButton:nil];
+            
             [self.mapView removeAnnotation:newAnnotation];
-            
-            
+            [self puntosMedios];
         }
         else
         {
             [self.annotations addObject:newAnnotation];
-            
         }
         
         
@@ -173,7 +214,6 @@
         CGFloat distance = sqrtf(xDiff * xDiff + yDiff * yDiff);
         if (distance < 30.0)
         {
-            [self.coordinates removeLastObject];
             return YES;
         }
     }
@@ -223,7 +263,7 @@
 {
     if (!self.isDrawingPolygon)
     {
-        //[self.mapView setSelectedAnnotations:self.annotations];
+        
     }
     
     else
@@ -284,15 +324,15 @@
     else
     {
         annotationView = [[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:annotationIdentifier];
-        if ([annotation.subtitle isEqualToString:@"Med"]) {
-            
-        }
-        else
-        {
-            
-        }
-        annotationView.image = [UIImage imageNamed:@"annotation.png"];
         annotationView.alpha = 0.5;
+    }
+    
+    if ([annotation.subtitle isEqualToString:@"Med"]) {
+        annotationView.image = [UIImage imageNamed:@"annotation2.png"];
+    }
+    else
+    {
+        annotationView.image = [UIImage imageNamed:@"annotation.png"];
     }
 
     [annotationView setSelected:YES animated:YES];
@@ -306,12 +346,78 @@
 
 -(void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)view
 {
+    if (self.isDelete && [self.coordinates count] > 3) {
+        if (![view.annotation.subtitle isEqualToString:@"Med"]) {
+            
+            for (int i=0; i< [self.annotations count]; i++) {
+                     
+                MKPointAnnotation * annotation;
+                annotation = [self.annotations objectAtIndex:i];
+                
+                if (annotation == view.annotation) {
+                         
+                    [self.coordinates removeObjectAtIndex:i];
+                }
+            }
+             
+            [self.annotations removeObject:view.annotation];
+            [self.mapView removeAnnotation:view.annotation];
+            
+            
+            
+            for (int i=0; i< [self.annotations count]; i++) {
+                
+                MKPointAnnotation * annotation;
+                annotation = [self.annotations objectAtIndex:i];
+                
+                if (annotation == view.annotation) {
+                    // NSLog(@"%d",i);
+                    
+                    [self.coordinates replaceObjectAtIndex:i withObject:[NSValue valueWithMKCoordinate:view.annotation.coordinate]];
+                }
+            }
+            
+            
+            NSInteger numberOfPoints = [self.coordinates count];
+            
+            
+            if (numberOfPoints > 2)
+            {
+                [self.mapView removeOverlays:self.mapView.overlays];
+                
+                CLLocationCoordinate2D points[numberOfPoints];
+                
+                for (NSInteger i = 0; i < numberOfPoints; i++)
+                    points[i] = [self.coordinates[i] MKCoordinateValue];
+                
+                [self.mapView addOverlay:[MKPolygon polygonWithCoordinates:points count:numberOfPoints]];
+                [self puntosMedios];
+            }
+            
+            
+        }
+    }
     
-    //MKPointAnnotation *annotation = view.annotation;
+      if ([view.annotation.subtitle isEqualToString:@"Med"])
+      {
+          MKPointAnnotation *newAnnotation = [[MKPointAnnotation alloc] init];
+          newAnnotation.coordinate = view.annotation.coordinate;
+          
+          [self.mapView addAnnotation:newAnnotation];
+          
+          for (int i = 0; i < [self.annotationsMed count]; i++) {
+              if (view.annotation == [self.annotationsMed objectAtIndex:i]) {
+                  [self.annotations insertObject:newAnnotation atIndex:i+1];
+                  [self.coordinates insertObject:[NSValue valueWithMKCoordinate:newAnnotation.coordinate] atIndex:i+1];
+              }
+          }
+          
+          [self puntosMedios];
+          
+          
+      }
     
-    //NSLog(@"Pulsado %lf", annotation.coordinate.latitude);
-    //[view setSelected:YES];
-    NSLog(@"X");
+    
     
     
 }
@@ -340,8 +446,8 @@
         case MKAnnotationViewDragStateDragging:
             
             NSLog(@"MKAnnotationViewDragStateDragging");
-           /* view.alpha = 1;
-            view.bounds = CGRectMake(0, 0, 45, 45);*/
+            view.alpha = 1;
+            view.bounds = CGRectMake(0, 0, 45, 45);
             
             break;
             
@@ -353,41 +459,77 @@
             NSLog(@"MKAnnotationViewDragStateEnding");
             
             
-            CLLocationCoordinate2D droppedAt = view.annotation.coordinate;
-            NSLog(@"dropped at %f,%f", droppedAt.latitude, droppedAt.longitude);
-            
-            for (int i=0; i< [self.annotations count]; i++) {
+            if ([view.annotation.subtitle isEqualToString:@"Med"]) {
                 
-                MKPointAnnotation * annotation;
-                annotation = [self.annotations objectAtIndex:i];
+                MKPointAnnotation *newAnnotation = [[MKPointAnnotation alloc] init];
+                newAnnotation.coordinate = view.annotation.coordinate;
                 
-                if (annotation == view.annotation) {
-                    // NSLog(@"%d",i);
-                    
-                    [self.coordinates replaceObjectAtIndex:i withObject:[NSValue valueWithMKCoordinate:view.annotation.coordinate]];
+                [self.mapView addAnnotation:newAnnotation];
+                
+                for (int i = 0; i < [self.annotationsMed count]; i++) {
+                    if (view.annotation == [self.annotationsMed objectAtIndex:i]) {
+                        [self.annotations insertObject:newAnnotation atIndex:i+1];
+                        [self.coordinates insertObject:[NSValue valueWithMKCoordinate:newAnnotation.coordinate] atIndex:i+1];
+                    }
                 }
+                
+                NSInteger numberOfPoints = [self.coordinates count];
+            
+                if (numberOfPoints > 2)
+                {
+                    [self.mapView removeOverlays:self.mapView.overlays];
+                
+                    CLLocationCoordinate2D points[numberOfPoints];
+                
+                    for (NSInteger i = 0; i < numberOfPoints; i++)
+                        points[i] = [self.coordinates[i] MKCoordinateValue];
+                
+                    [self.mapView addOverlay:[MKPolygon polygonWithCoordinates:points count:numberOfPoints]];
+                
+                    [self puntosMedios];
+                }
+            
             }
-            
-            
-            NSInteger numberOfPoints = [self.coordinates count];
-            
-            
-            if (numberOfPoints > 2)
+    
+            else
             {
-                [self.mapView removeOverlays:self.mapView.overlays];
                 
-                CLLocationCoordinate2D points[numberOfPoints];
+                CLLocationCoordinate2D droppedAt = view.annotation.coordinate;
+                NSLog(@"dropped at %f,%f", droppedAt.latitude, droppedAt.longitude);
                 
-                for (NSInteger i = 0; i < numberOfPoints; i++)
-                    points[i] = [self.coordinates[i] MKCoordinateValue];
+                for (int i=0; i< [self.annotations count]; i++) {
+                    
+                    MKPointAnnotation * annotation;
+                    annotation = [self.annotations objectAtIndex:i];
+                    
+                    if (annotation == view.annotation) {
+                        // NSLog(@"%d",i);
+                        
+                        [self.coordinates replaceObjectAtIndex:i withObject:[NSValue valueWithMKCoordinate:view.annotation.coordinate]];
+                    }
+                }
                 
-                [self.mapView addOverlay:[MKPolygon polygonWithCoordinates:points count:numberOfPoints]];
+                
+                NSInteger numberOfPoints = [self.coordinates count];
+                
+                
+                if (numberOfPoints > 2)
+                {
+                    [self.mapView removeOverlays:self.mapView.overlays];
+                    
+                    CLLocationCoordinate2D points[numberOfPoints];
+                    
+                    for (NSInteger i = 0; i < numberOfPoints; i++)
+                        points[i] = [self.coordinates[i] MKCoordinateValue];
+                    
+                    [self.mapView addOverlay:[MKPolygon polygonWithCoordinates:points count:numberOfPoints]];
+                    
+                    [self puntosMedios];
+                }
+                
             }
-
             
             
-           // [self puntosMedios];
-
             break;
             
         case MKAnnotationViewDragStateCanceling:
@@ -416,6 +558,9 @@
     CLLocationCoordinate2D coordinate2;
     CLLocationCoordinate2D coordinateMed;
     
+    [self.mapView removeAnnotations:self.annotationsMed];
+    [self.annotationsMed removeAllObjects];
+    
     for (int i=0; i< [self.coordinates count]; i++) {
        
         [self.coordinates[i] MKCoordinateValue];
@@ -430,12 +575,11 @@
         annotationMed.coordinate = coordinateMed;
         annotationMed.subtitle = @"Med";
         
+        [self.annotationsMed addObject:annotationMed];
+        
         [self.mapView addAnnotation:annotationMed];
         
     }
-    
-    
-    
     
 }
 

@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
 
-@interface ViewController : UIViewController <UIGestureRecognizerDelegate, MKMapViewDelegate, MKAnnotation, MKOverlay>
+@interface ViewController : UIViewController <UIGestureRecognizerDelegate, MKMapViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *drawOverlayButton;
 @property (weak, nonatomic) IBOutlet MKMapView *mapView;

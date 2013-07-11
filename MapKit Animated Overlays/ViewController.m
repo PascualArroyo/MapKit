@@ -323,16 +323,22 @@
     }
     else
     {
+        
         annotationView = [[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:annotationIdentifier];
+        [[annotationView layer] setBorderWidth:1.0f];
         annotationView.alpha = 0.5;
     }
     
     if ([annotation.subtitle isEqualToString:@"Med"]) {
-        annotationView.image = [UIImage imageNamed:@"annotation2.png"];
+        annotationView.frame = CGRectMake(annotationView.bounds.origin.x-10, annotationView.bounds.origin.y-10, 20, 20);
+        annotationView.backgroundColor = [UIColor yellowColor];
+        [[annotationView layer] setCornerRadius:10.0f];
     }
     else
     {
-        annotationView.image = [UIImage imageNamed:@"annotation.png"];
+        annotationView.frame = CGRectMake(annotationView.bounds.origin.x-10, annotationView.bounds.origin.y-10, 20, 20);
+        annotationView.backgroundColor = [UIColor redColor];
+        [[annotationView layer] setCornerRadius:10.0f];
     }
 
     [annotationView setSelected:YES animated:YES];
@@ -405,6 +411,7 @@
           
           [self.mapView addAnnotation:newAnnotation];
           
+          
           for (int i = 0; i < [self.annotationsMed count]; i++) {
               if (view.annotation == [self.annotationsMed objectAtIndex:i]) {
                   [self.annotations insertObject:newAnnotation atIndex:i+1];
@@ -431,23 +438,24 @@
             
             NSLog(@"MKAnnotationViewDragStateNone");
             view.alpha = 0.5;
-            view.bounds = CGRectMake(0, 0, 30, 30);
+            view.transform = CGAffineTransformIdentity;
             
             break;
             
         case MKAnnotationViewDragStateStarting:
             
             NSLog(@"MKAnnotationViewDragStateStarting");
+          //  view.bounds = CGRectMake(0, 0, 45, 45);
+            view.transform = CGAffineTransformMakeScale(1.5, 1.5);
             view.alpha = 1;
-            view.bounds = CGRectMake(0, 0, 45, 45);
             
             break;
             
         case MKAnnotationViewDragStateDragging:
             
             NSLog(@"MKAnnotationViewDragStateDragging");
+            view.transform = CGAffineTransformIdentity;
             view.alpha = 1;
-            view.bounds = CGRectMake(0, 0, 45, 45);
             
             break;
             
@@ -455,7 +463,7 @@
         case MKAnnotationViewDragStateEnding:
             
             view.alpha= 0.5;
-            view.bounds = CGRectMake(0, 0, 30, 30);
+            view.transform = CGAffineTransformIdentity;
             NSLog(@"MKAnnotationViewDragStateEnding");
             
             
@@ -535,8 +543,8 @@
         case MKAnnotationViewDragStateCanceling:
             
             NSLog(@"MKAnnotationViewDragStateCanceling");
+            view.transform = CGAffineTransformIdentity;
             view.alpha = 0.5;
-            view.bounds = CGRectMake(0, 0, 30, 30);
             
             [view setSelected:YES];
             
@@ -544,11 +552,6 @@
             
     }
     
-    if (oldState == MKAnnotationViewDragStateDragging) {
-        
-         NSLog(@"OldState MKAnnotationViewDragStateDragging");
-        
-    }
     
 }
 

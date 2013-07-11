@@ -8,8 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
+#import <QuartzCore/QuartzCore.h>
 
-@interface ViewController : UIViewController <UIGestureRecognizerDelegate, MKMapViewDelegate>
+@interface ViewController : UIViewController <MKMapViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *drawOverlayButton;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *deleteOverlayButton;

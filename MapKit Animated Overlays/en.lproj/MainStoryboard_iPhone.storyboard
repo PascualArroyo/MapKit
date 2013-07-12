@@ -4,7 +4,7 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="2083"/>
     </dependencies>
     <scenes>
-        <!--View Controller - Map-->
+        <!--View Controller-->
         <scene sceneID="5">
             <objects>
                 <viewController id="2" customClass="ViewController" sceneMemberID="viewController">
@@ -13,6 +13,9 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="eUl-qC-rqI">
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="546" id="P2c-uu-PAa"/>
+                                </constraints>
                                 <connections>
                                     <outlet property="delegate" destination="2" id="PKE-df-7Dp"/>
                                 </connections>
@@ -21,18 +24,30 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="eUl-qC-rqI" firstAttribute="trailing" secondItem="3" secondAttribute="trailing" type="default" id="KSi-gz-ffu"/>
+                            <constraint firstItem="eUl-qC-rqI" firstAttribute="top" secondItem="3" secondAttribute="top" type="default" id="OKK-IB-cLq"/>
                             <constraint firstItem="eUl-qC-rqI" firstAttribute="leading" secondItem="3" secondAttribute="leading" type="default" id="Osy-z1-0UN"/>
-                            <constraint firstItem="eUl-qC-rqI" firstAttribute="top" secondItem="3" secondAttribute="top" type="default" id="T50-A0-bAu"/>
-                            <constraint firstItem="eUl-qC-rqI" firstAttribute="bottom" secondItem="3" secondAttribute="bottom" type="default" id="n7M-77-EZp"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Map" id="Jl3-tG-yD0">
-                        <barButtonItem key="leftBarButtonItem" title="Delete overlay" id="9f5-GX-dcZ">
+                    <navigationItem key="navigationItem" id="Jl3-tG-yD0">
+                        <nil key="title"/>
+                        <barButtonItem key="leftBarButtonItem" title="Delete" id="9f5-GX-dcZ">
                             <connections>
                                 <action selector="deleteOverlay:" destination="2" id="YU9-OG-xAu"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="Draw overlay" id="s9h-E8-UjK">
+                        <segmentedControl key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="Ba4-he-Q2M">
+                            <rect key="frame" x="70" y="6" width="189" height="32"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <segments>
+                                <segment title="Map"/>
+                                <segment title="Hybrid"/>
+                                <segment title="Satellite"/>
+                            </segments>
+                            <connections>
+                                <action selector="mapTypeChanged:" destination="2" eventType="valueChanged" id="bUZ-hR-wAV"/>
+                            </connections>
+                        </segmentedControl>
+                        <barButtonItem key="rightBarButtonItem" title="Start" id="s9h-E8-UjK">
                             <connections>
                                 <action selector="didTouchUpInsideDrawButton:" destination="2" id="Pd4-6d-qrr"/>
                             </connections>
@@ -41,6 +56,7 @@
                     <connections>
                         <outlet property="deleteOverlayButton" destination="9f5-GX-dcZ" id="Ufq-D2-Nx2"/>
                         <outlet property="drawOverlayButton" destination="s9h-E8-UjK" id="Oih-tc-aaf"/>
+                        <outlet property="mapTypeSegmentedControl" destination="Ba4-he-Q2M" id="qBE-Id-ebH"/>
                         <outlet property="mapView" destination="eUl-qC-rqI" id="Kn5-hr-vwW"/>
                     </connections>
                 </viewController>
@@ -76,8 +92,10 @@
             <relationships>
                 <relationship kind="action" name="deleteOverlay:"/>
                 <relationship kind="action" name="didTouchUpInsideDrawButton:"/>
+                <relationship kind="action" name="mapTypeChanged:"/>
                 <relationship kind="outlet" name="deleteOverlayButton" candidateClass="UIBarButtonItem"/>
                 <relationship kind="outlet" name="drawOverlayButton" candidateClass="UIBarButtonItem"/>
+                <relationship kind="outlet" name="mapTypeSegmentedControl" candidateClass="UISegmentedControl"/>
                 <relationship kind="outlet" name="mapView" candidateClass="MKMapView"/>
             </relationships>
         </class>

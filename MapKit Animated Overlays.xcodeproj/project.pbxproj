@@ -16,13 +16,11 @@
 		83698C91172EF7E700760672 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 83698C90172EF7E700760672 /* Default.png */; };
 		83698C93172EF7E700760672 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 83698C92172EF7E700760672 /* Default@2x.png */; };
 		83698C95172EF7E700760672 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 83698C94172EF7E700760672 /* Default-568h@2x.png */; };
-		83698C98172EF7E700760672 /* MainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83698C96172EF7E700760672 /* MainStoryboard.storyboard */; };
+		83698C98172EF7E700760672 /* MainStoryboard_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83698C96172EF7E700760672 /* MainStoryboard_iPhone.storyboard */; };
 		83698C9B172EF7E700760672 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 83698C9A172EF7E700760672 /* ViewController.m */; };
 		83698CA4172EF82600760672 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 83698CA2172EF82600760672 /* README.md */; };
 		83698CA6172EF8B300760672 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83698CA5172EF8B300760672 /* MapKit.framework */; };
-		83698CA8172EF90100760672 /* annotation.png in Resources */ = {isa = PBXBuildFile; fileRef = 83698CA7172EF90100760672 /* annotation.png */; };
-		C5863C1C178C02D900B7802F /* MyAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = C5863C1B178C02D900B7802F /* MyAnnotation.m */; };
-		C5E19E70178D525C00DA7111 /* annotation2.png in Resources */ = {isa = PBXBuildFile; fileRef = C5E19E6F178D525C00DA7111 /* annotation2.png */; };
+		C57C264A17902B6F00CBA608 /* MainStoryboard_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C57C264917902B6F00CBA608 /* MainStoryboard_iPad.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,15 +37,12 @@
 		83698C90172EF7E700760672 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		83698C92172EF7E700760672 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		83698C94172EF7E700760672 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		83698C97172EF7E700760672 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard.storyboard; sourceTree = "<group>"; };
+		83698C97172EF7E700760672 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard_iPhone.storyboard; sourceTree = "<group>"; };
 		83698C99172EF7E700760672 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		83698C9A172EF7E700760672 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		83698CA2172EF82600760672 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		83698CA5172EF8B300760672 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
-		83698CA7172EF90100760672 /* annotation.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = annotation.png; sourceTree = "<group>"; };
-		C5863C1A178C02D900B7802F /* MyAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyAnnotation.h; sourceTree = "<group>"; };
-		C5863C1B178C02D900B7802F /* MyAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyAnnotation.m; sourceTree = "<group>"; };
-		C5E19E6F178D525C00DA7111 /* annotation2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = annotation2.png; sourceTree = "<group>"; };
+		C57C264917902B6F00CBA608 /* MainStoryboard_iPad.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MainStoryboard_iPad.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,16 +92,13 @@
 		83698C84172EF7E600760672 /* MapKit Animated Overlays */ = {
 			isa = PBXGroup;
 			children = (
-				C5E19E6F178D525C00DA7111 /* annotation2.png */,
 				83698C8D172EF7E600760672 /* AppDelegate.h */,
 				83698C8E172EF7E700760672 /* AppDelegate.m */,
-				83698C96172EF7E700760672 /* MainStoryboard.storyboard */,
+				C57C264917902B6F00CBA608 /* MainStoryboard_iPad.storyboard */,
+				83698C96172EF7E700760672 /* MainStoryboard_iPhone.storyboard */,
 				83698C99172EF7E700760672 /* ViewController.h */,
 				83698C9A172EF7E700760672 /* ViewController.m */,
-				83698CA7172EF90100760672 /* annotation.png */,
 				83698C85172EF7E600760672 /* Supporting Files */,
-				C5863C1A178C02D900B7802F /* MyAnnotation.h */,
-				C5863C1B178C02D900B7802F /* MyAnnotation.m */,
 			);
 			path = "MapKit Animated Overlays";
 			sourceTree = "<group>";
@@ -180,10 +172,9 @@
 				83698C91172EF7E700760672 /* Default.png in Resources */,
 				83698C93172EF7E700760672 /* Default@2x.png in Resources */,
 				83698C95172EF7E700760672 /* Default-568h@2x.png in Resources */,
-				83698C98172EF7E700760672 /* MainStoryboard.storyboard in Resources */,
+				83698C98172EF7E700760672 /* MainStoryboard_iPhone.storyboard in Resources */,
 				83698CA4172EF82600760672 /* README.md in Resources */,
-				83698CA8172EF90100760672 /* annotation.png in Resources */,
-				C5E19E70178D525C00DA7111 /* annotation2.png in Resources */,
+				C57C264A17902B6F00CBA608 /* MainStoryboard_iPad.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -197,7 +188,6 @@
 				83698C8B172EF7E600760672 /* main.m in Sources */,
 				83698C8F172EF7E700760672 /* AppDelegate.m in Sources */,
 				83698C9B172EF7E700760672 /* ViewController.m in Sources */,
-				C5863C1C178C02D900B7802F /* MyAnnotation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,12 +202,12 @@
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
-		83698C96172EF7E700760672 /* MainStoryboard.storyboard */ = {
+		83698C96172EF7E700760672 /* MainStoryboard_iPhone.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
 				83698C97172EF7E700760672 /* en */,
 			);
-			name = MainStoryboard.storyboard;
+			name = MainStoryboard_iPhone.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -285,7 +275,9 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MapKit Animated Overlays/MapKit Animated Overlays-Prefix.pch";
 				INFOPLIST_FILE = "MapKit Animated Overlays/MapKit Animated Overlays-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -296,7 +288,9 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MapKit Animated Overlays/MapKit Animated Overlays-Prefix.pch";
 				INFOPLIST_FILE = "MapKit Animated Overlays/MapKit Animated Overlays-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

@@ -13,10 +13,12 @@
 @property (nonatomic, strong) NSMutableArray *coordinates;
 @property (nonatomic, strong) NSMutableArray *annotations;
 @property (nonatomic, strong) NSMutableArray *annotationsMed;
-@property (nonatomic, weak) MKPolyline *polyLine;                  // used during the drawing of the polyline, but discarded once the MKPolygon is added
-@property (nonatomic, weak) MKPointAnnotation *previousAnnotation; // if you're using other annotations, you might want to use a custom annotation type here
+@property (nonatomic, weak) MKPolyline *polyLine;
+@property (nonatomic, weak) MKPointAnnotation *previousAnnotation;
+@property (nonatomic, weak) MKPointAnnotation *centerAnnotation;
 @property (nonatomic) BOOL isDrawingPolygon;
 @property (nonatomic) BOOL isDelete;
+@property (nonatomic) BOOL canEnding;
 
 @end
 
@@ -28,17 +30,20 @@
     
     self.mapView.userTrackingMode = MKUserTrackingModeFollow;
     
-    self.annotations = [[NSMutableArray alloc] init];
-    self.annotationsMed = [[NSMutableArray alloc] init];
-    self.coordinates = [[NSMutableArray alloc] init];
+    self.annotations = [[NSMutableArray alloc] init]; //Vertices
+    self.annotationsMed = [[NSMutableArray alloc] init]; //Puntos intermedios
+    self.coordinates = [[NSMutableArray alloc] init]; //Coordenadas de los vertices
     
-    [self.mapView setDelegate: self];
-    self.isDelete = NO;
+    [self.mapView setDelegate: self]; //Establecemos el delegado
+    self.mapView.mapType = MKMapTypeStandard;
+    self.isDelete = NO; //Establece si se pueden borrar los vertices al tocarlos
+    self.canEnding = NO; //Necesario para que no se repita el evento termiar de editar dos veces seguidas
     
 }
 
 - (IBAction)deleteOverlay:(id)sender
 {
+    //Cambiamos la opcion de borrado y su boton
     
     if (!self.isDelete)
     {
@@ -49,7 +54,7 @@
     else
     {
        self.isDelete = NO;
-        [self.deleteOverlayButton setTitle:@"Delete Overlay"];
+        [self.deleteOverlayButton setTitle:@"Delete"];
     }
     
 }
@@ -58,8 +63,7 @@
 {
     if (!self.isDrawingPolygon)
     {
-        // We're starting the drawing of our polyline/polygon, so
-        // let's initialize everything
+        //Comenzamos a dibujar el poligono, si antes habia otro lo borramos
         
         self.isDrawingPolygon = YES;
         self.isDelete = NO;
@@ -72,45 +76,38 @@
         [self.annotationsMed removeAllObjects];
         [self.coordinates removeAllObjects];
         
-        // turn off map interaction so touches can fall through to
-        // here
+        if(self.centerAnnotation)
+            [self.mapView removeAnnotation:self.centerAnnotation];
         
+        
+        //Interaccion del usuario con los mapas desactivada para dibujar el poligono
         self.mapView.userInteractionEnabled = NO;
         
-        // change our "draw overlay" button to "done"
+        // cambiamos el texto de los botones
         
         [self.drawOverlayButton setTitle:@"Done"];
-        [self.deleteOverlayButton setTitle:@"Delete Overlay"];
+        [self.deleteOverlayButton setTitle:@"Delete"];
     }
     else
     {
-        // We're finishing the drawing of our polyline, so let's
-        // clean up, remove polyline, and add polygon
+        //Hemos pulsado sobre done y ahora tiene que dibujarse el poligo
         
         self.isDrawingPolygon = NO;
         
-        // let's restore map interaction
         
+        //Volvemos a habilitar la interaccion del usuario con el mapa
         self.mapView.userInteractionEnabled = YES;
-        
-        // and, if we drew more than two points, let's draw our polygon
         
         NSInteger numberOfPoints = [self.coordinates count];
         
+        //Si tiene mas de dos vertices dibujamos el poligono
         if (numberOfPoints > 2)
         {
-            CLLocationCoordinate2D points[numberOfPoints];
-            for (NSInteger i = 0; i < numberOfPoints; i++)
-                points[i] = [self.coordinates[i] MKCoordinateValue];
-            [self.mapView addOverlay:[MKPolygon polygonWithCoordinates:points count:numberOfPoints]];
-            
-            if (self.polyLine)
-                [self.mapView removeOverlay:self.polyLine];
-            
-            [self puntosMedios];
+            [self dibujarTodo: numberOfPoints];
         }
         else
         {
+            //Sino borramos los posibles vertices creados y las lineas
             
             [self.mapView removeOverlays:self.mapView.overlays];
             [self.mapView removeAnnotations:self.annotations];
@@ -120,14 +117,12 @@
             [self.annotationsMed removeAllObjects];
             [self.coordinates removeAllObjects];
         }
-        // and if we had a polyline, let's remove it
         
         
-        // change our "draw overlay" button to "done"
+        //cambiamos el nombre del boton
+        [self.drawOverlayButton setTitle:@"Start"];
         
-        [self.drawOverlayButton setTitle:@"Draw overlay"];
-        
-        // remove our old point annotation
+        // borramos el ultimo vertice, ya que sera el primero
         
         if (self.previousAnnotation)
             [self.mapView removeAnnotation:self.previousAnnotation];
@@ -167,6 +162,7 @@
     
     MKPointAnnotation *newAnnotation = [[MKPointAnnotation alloc] init];
     newAnnotation.coordinate = coordinate;
+    newAnnotation.subtitle = @"Normal";
     
     [self.mapView addAnnotation:newAnnotation];
     
@@ -194,7 +190,6 @@
             [self.annotations addObject:newAnnotation];
         }
         
-        
     }
 
 }
@@ -202,6 +197,8 @@
 
 - (BOOL)isClosingPolygonWithCoordinate:(CLLocationCoordinate2D)coordinate
 {
+    
+    //Si tenemos mas de tres vertices, comprobamos si queremos cerrar los vertices al estar el primero y el ultimo muy proximos
     if ([self.coordinates count] > 2)
     {
         CLLocationCoordinate2D startCoordinate = [self.coordinates[0] MKCoordinateValue];
@@ -229,9 +226,31 @@
     
     if (!self.isDrawingPolygon)
     {
-        //[self.mapView setSelectedAnnotations:self.annotations];
-    }
+        for (int i=0; i< [self.annotations count]; i++) {
+            
+            MKPointAnnotation * annotation;
+            annotation = [self.annotations objectAtIndex:i];
+            
+            MKAnnotationView * view;
+            
+            view = [self.mapView viewForAnnotation:annotation];
+            
+            [view setSelected:YES];
+        }
     
+        for (int i=0; i< [self.annotationsMed count]; i++) {
+        
+            MKPointAnnotation * annotation;
+            annotation = [self.annotationsMed objectAtIndex:i];
+        
+            MKAnnotationView * view;
+        
+            view = [self.mapView viewForAnnotation:annotation];
+        
+            [view setSelected:YES];
+        }
+    }
+
     else
     {
         CLLocationCoordinate2D coordinate = [self.mapView convertPoint:location toCoordinateFromView:self.mapView];
@@ -245,7 +264,8 @@
 {
     if (!self.isDrawingPolygon)
     {
-        //[self.mapView setSelectedAnnotations:self.annotations];
+        
+        
     }
     
     else
@@ -255,6 +275,7 @@
         CLLocationCoordinate2D coordinate = [self.mapView convertPoint:location toCoordinateFromView:self.mapView];
         
         [self addCoordinate:coordinate replaceLastObject:YES end:NO];
+        
     }
     
 }
@@ -300,8 +321,9 @@
         
         overlayPathView.strokeColor = [[UIColor blueColor] colorWithAlphaComponent:0.7];
         overlayPathView.lineWidth = 3;
-        
+
         return overlayPathView;
+        
     }
     
     return nil;
@@ -317,28 +339,31 @@
     
     MKAnnotationView *annotationView = [mapView dequeueReusableAnnotationViewWithIdentifier:annotationIdentifier];
     
+   
     if (annotationView)
     {
         annotationView.annotation = annotation;
     }
     else
     {
-        
         annotationView = [[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:annotationIdentifier];
         [[annotationView layer] setBorderWidth:1.0f];
         annotationView.alpha = 0.5;
     }
     
-    if ([annotation.subtitle isEqualToString:@"Med"]) {
-        annotationView.frame = CGRectMake(annotationView.bounds.origin.x-10, annotationView.bounds.origin.y-10, 20, 20);
+    if ([annotation.subtitle isEqualToString:@"Normal"]) {
+        annotationView.frame = CGRectMake(annotationView.bounds.origin.x-13, annotationView.bounds.origin.y-13, 26, 26);
+        annotationView.backgroundColor = [UIColor redColor];
+        [[annotationView layer] setCornerRadius:13.0f];
+    }
+    else if ([annotation.subtitle isEqualToString:@"Med"]) {
+        annotationView.frame = CGRectMake(annotationView.bounds.origin.x-8, annotationView.bounds.origin.y-8, 16, 16);
         annotationView.backgroundColor = [UIColor yellowColor];
-        [[annotationView layer] setCornerRadius:10.0f];
+        [[annotationView layer] setCornerRadius:8.0f];
     }
     else
     {
-        annotationView.frame = CGRectMake(annotationView.bounds.origin.x-10, annotationView.bounds.origin.y-10, 20, 20);
-        annotationView.backgroundColor = [UIColor redColor];
-        [[annotationView layer] setCornerRadius:10.0f];
+        return nil;
     }
 
     [annotationView setSelected:YES animated:YES];
@@ -352,6 +377,9 @@
 
 -(void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)view
 {
+    
+    NSLog(@"*** didSelectAnnotationView ***");
+    
     if (self.isDelete && [self.coordinates count] > 3) {
         if (![view.annotation.subtitle isEqualToString:@"Med"]) {
             
@@ -377,40 +405,32 @@
                 annotation = [self.annotations objectAtIndex:i];
                 
                 if (annotation == view.annotation) {
-                    // NSLog(@"%d",i);
                     
                     [self.coordinates replaceObjectAtIndex:i withObject:[NSValue valueWithMKCoordinate:view.annotation.coordinate]];
                 }
             }
             
-            
             NSInteger numberOfPoints = [self.coordinates count];
-            
             
             if (numberOfPoints > 2)
             {
-                [self.mapView removeOverlays:self.mapView.overlays];
-                
-                CLLocationCoordinate2D points[numberOfPoints];
-                
-                for (NSInteger i = 0; i < numberOfPoints; i++)
-                    points[i] = [self.coordinates[i] MKCoordinateValue];
-                
-                [self.mapView addOverlay:[MKPolygon polygonWithCoordinates:points count:numberOfPoints]];
-                [self puntosMedios];
+                [self dibujarTodo: numberOfPoints];
             }
             
-            
         }
+        
     }
+
+     //GENERA UN NUEVO VERTICE AL PULSAR UN VERTICE INTERMEDIO
     
+    /*
       if ([view.annotation.subtitle isEqualToString:@"Med"])
       {
           MKPointAnnotation *newAnnotation = [[MKPointAnnotation alloc] init];
+          newAnnotation.subtitle = @"Normal";
           newAnnotation.coordinate = view.annotation.coordinate;
           
           [self.mapView addAnnotation:newAnnotation];
-          
           
           for (int i = 0; i < [self.annotationsMed count]; i++) {
               if (view.annotation == [self.annotationsMed objectAtIndex:i]) {
@@ -421,11 +441,10 @@
           
           [self puntosMedios];
           
-          
       }
+    */
     
-    
-    
+   // [view setSelected:YES];
     
 }
 
@@ -434,106 +453,98 @@
     
     switch (newState)
     {
-        case MKAnnotationViewDragStateNone:
-            
-            NSLog(@"MKAnnotationViewDragStateNone");
-            view.alpha = 0.5;
-            view.transform = CGAffineTransformIdentity;
-            
-            break;
             
         case MKAnnotationViewDragStateStarting:
             
             NSLog(@"MKAnnotationViewDragStateStarting");
-          //  view.bounds = CGRectMake(0, 0, 45, 45);
-            view.transform = CGAffineTransformMakeScale(1.5, 1.5);
+           
+            if ([view.annotation.subtitle isEqualToString:@"Med"])
+            {
+                view.bounds = CGRectMake(0, 0, 26, 26);
+                [[view layer] setCornerRadius:13.0f];
+            }
+            else
+            {
+                view.bounds = CGRectMake(0, 0, 40, 40);
+                [[view layer] setCornerRadius:20.0f];
+            }
             view.alpha = 1;
             
-            break;
-            
-        case MKAnnotationViewDragStateDragging:
-            
-            NSLog(@"MKAnnotationViewDragStateDragging");
-            view.transform = CGAffineTransformIdentity;
-            view.alpha = 1;
+            self.canEnding = YES;
             
             break;
             
             
         case MKAnnotationViewDragStateEnding:
             
-            view.alpha= 0.5;
-            view.transform = CGAffineTransformIdentity;
             NSLog(@"MKAnnotationViewDragStateEnding");
             
-            
-            if ([view.annotation.subtitle isEqualToString:@"Med"]) {
+            if (self.canEnding == YES) {
                 
-                MKPointAnnotation *newAnnotation = [[MKPointAnnotation alloc] init];
-                newAnnotation.coordinate = view.annotation.coordinate;
+                self.canEnding = NO;
+                view.alpha= 0.5;
                 
-                [self.mapView addAnnotation:newAnnotation];
-                
-                for (int i = 0; i < [self.annotationsMed count]; i++) {
-                    if (view.annotation == [self.annotationsMed objectAtIndex:i]) {
-                        [self.annotations insertObject:newAnnotation atIndex:i+1];
-                        [self.coordinates insertObject:[NSValue valueWithMKCoordinate:newAnnotation.coordinate] atIndex:i+1];
+                if ([view.annotation.subtitle isEqualToString:@"Med"]) {
+                    
+                    view.bounds = CGRectMake(0, 0, 16, 16);
+                    [[view layer] setCornerRadius:8.0f];
+                    
+                    MKPointAnnotation *newAnnotation = [[MKPointAnnotation alloc] init];
+                    newAnnotation.subtitle = @"Normal";
+                    newAnnotation.coordinate = view.annotation.coordinate;
+                    
+                    [self.mapView addAnnotation:newAnnotation];
+                    
+                    for (int i = 0; i < [self.annotationsMed count]; i++) {
+                        if (view.annotation == [self.annotationsMed objectAtIndex:i]) {
+                            [self.annotations insertObject:newAnnotation atIndex:i+1];
+                            [self.coordinates insertObject:[NSValue valueWithMKCoordinate:newAnnotation.coordinate] atIndex:i+1];
+                        }
                     }
+                    
+                    NSLog(@"Fin");
+                    
+                    NSInteger numberOfPoints = [self.coordinates count];
+                    
+                    if (numberOfPoints > 2)
+                    {
+                        [self dibujarTodo: numberOfPoints];
+                    }
+                    
+                    
                 }
                 
-                NSInteger numberOfPoints = [self.coordinates count];
-            
-                if (numberOfPoints > 2)
+                else
                 {
-                    [self.mapView removeOverlays:self.mapView.overlays];
-                
-                    CLLocationCoordinate2D points[numberOfPoints];
-                
-                    for (NSInteger i = 0; i < numberOfPoints; i++)
-                        points[i] = [self.coordinates[i] MKCoordinateValue];
-                
-                    [self.mapView addOverlay:[MKPolygon polygonWithCoordinates:points count:numberOfPoints]];
-                
-                    [self puntosMedios];
-                }
-            
-            }
-    
-            else
-            {
-                
-                CLLocationCoordinate2D droppedAt = view.annotation.coordinate;
-                NSLog(@"dropped at %f,%f", droppedAt.latitude, droppedAt.longitude);
-                
-                for (int i=0; i< [self.annotations count]; i++) {
                     
-                    MKPointAnnotation * annotation;
-                    annotation = [self.annotations objectAtIndex:i];
+                    view.bounds = CGRectMake(0, 0, 26, 26);
+                    [[view layer] setCornerRadius:13.0f];
                     
-                    if (annotation == view.annotation) {
-                        // NSLog(@"%d",i);
+                    CLLocationCoordinate2D droppedAt = view.annotation.coordinate;
+                    NSLog(@"dropped at %f,%f", droppedAt.latitude, droppedAt.longitude);
+                    
+                    for (int i=0; i< [self.annotations count]; i++) {
                         
-                        [self.coordinates replaceObjectAtIndex:i withObject:[NSValue valueWithMKCoordinate:view.annotation.coordinate]];
+                        MKPointAnnotation * annotation;
+                        annotation = [self.annotations objectAtIndex:i];
+                        
+                        if (annotation == view.annotation) {
+                            
+                            [self.coordinates replaceObjectAtIndex:i withObject:[NSValue valueWithMKCoordinate:view.annotation.coordinate]];
+                        }
                     }
+                    
+                    
+                    NSInteger numberOfPoints = [self.coordinates count];
+                    
+                    
+                    if (numberOfPoints > 2)
+                    {
+                        [self dibujarTodo: numberOfPoints];
+                    }
+                    
                 }
-                
-                
-                NSInteger numberOfPoints = [self.coordinates count];
-                
-                
-                if (numberOfPoints > 2)
-                {
-                    [self.mapView removeOverlays:self.mapView.overlays];
-                    
-                    CLLocationCoordinate2D points[numberOfPoints];
-                    
-                    for (NSInteger i = 0; i < numberOfPoints; i++)
-                        points[i] = [self.coordinates[i] MKCoordinateValue];
-                    
-                    [self.mapView addOverlay:[MKPolygon polygonWithCoordinates:points count:numberOfPoints]];
-                    
-                    [self puntosMedios];
-                }
+
                 
             }
             
@@ -543,15 +554,71 @@
         case MKAnnotationViewDragStateCanceling:
             
             NSLog(@"MKAnnotationViewDragStateCanceling");
-            view.transform = CGAffineTransformIdentity;
+            
+            
+            if ([view.annotation.subtitle isEqualToString:@"Med"])
+            {
+                view.bounds = CGRectMake(0, 0, 16, 16);
+                [[view layer] setCornerRadius:8.0f];
+            }
+            else
+            {
+                view.bounds = CGRectMake(0, 0, 26, 26);
+                [[view layer] setCornerRadius:13.0f];
+            }
             view.alpha = 0.5;
             
-            [view setSelected:YES];
+            self.canEnding = NO;
             
             break;
             
     }
     
+    
+}
+
+
+- (void) dibujarTodo:(int)numberOfPoints
+{
+    [self.mapView removeOverlays:self.mapView.overlays];
+    
+    CLLocationCoordinate2D points[numberOfPoints];
+    CLLocationCoordinate2D centro;
+    
+    centro.latitude = 0;
+    centro.longitude = 0;
+    
+    for (NSInteger i = 0; i < numberOfPoints; i++)
+    {
+        points[i] = [self.coordinates[i] MKCoordinateValue];
+        
+        centro.latitude = centro.latitude + points[i].latitude;
+        centro.longitude = centro.longitude + points[i].longitude;
+        
+    }
+    
+    centro.latitude = centro.latitude/numberOfPoints;
+    centro.longitude = centro.longitude/numberOfPoints;
+    
+    [self.mapView addOverlay:[MKPolygon polygonWithCoordinates:points count:numberOfPoints]];
+    
+    NSLog(@"%lf",[self polygonArea]);
+    
+    [self puntosMedios];
+    
+    if (self.centerAnnotation) {
+        [self.mapView removeAnnotation:self.centerAnnotation];
+    }
+    
+    
+    MKPointAnnotation * newAnnotation = [[MKPointAnnotation alloc] init];
+    newAnnotation.coordinate = centro;
+    newAnnotation.title = [NSString stringWithFormat:@"Nombre Parcela"];
+    newAnnotation.subtitle = [NSString stringWithFormat:@"%lf hectáreas",[self polygonArea]];
+    
+    self.centerAnnotation = newAnnotation;
+    
+    [self.mapView addAnnotation:self.centerAnnotation];
     
 }
 
@@ -568,8 +635,8 @@
        
         [self.coordinates[i] MKCoordinateValue];
         
-        coordinate1 = [self.coordinates[i] MKCoordinateValue];;
-        coordinate2 = [self.coordinates[(i+1)%[self.coordinates count]] MKCoordinateValue];;
+        coordinate1 = [self.coordinates[i] MKCoordinateValue];
+        coordinate2 = [self.coordinates[(i+1)%[self.coordinates count]] MKCoordinateValue];
         
         coordinateMed.latitude = (coordinate1.latitude + coordinate2.latitude)/2;
         coordinateMed.longitude = (coordinate1.longitude + coordinate2.longitude)/2;
@@ -584,6 +651,49 @@
         
     }
     
+}
+
+- (double) polygonArea
+{
+    double area = 0;
+    int j = [self.coordinates count]-1;
+    
+    CLLocationCoordinate2D point1, point2;
+    
+    for (int i=0; i<[self.coordinates count]; i++)
+    {
+        point1 = [self.coordinates[i] MKCoordinateValue];
+        point2 = [self.coordinates[j] MKCoordinateValue];
+        
+        area = area + (point1.longitude + point2.longitude) * (point1.latitude - point2.latitude);
+        j = i;
+    }
+    
+    area = (area/2)*1000000;
+    
+    if (area < 0) {
+        area = -area;
+    }
+    
+    return area;
+    
+}
+
+
+- (IBAction)mapTypeChanged:(id)sender {
+    switch (self.mapTypeSegmentedControl.selectedSegmentIndex) {
+        case 0:
+            self.mapView.mapType = MKMapTypeStandard;
+            break;
+        case 1:
+            self.mapView.mapType = MKMapTypeHybrid;
+            break;
+        case 2:
+            self.mapView.mapType = MKMapTypeSatellite;
+            break;
+        default:
+            break;
+    }
 }
 
 @end

@@ -15,9 +15,12 @@
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *drawOverlayButton;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *deleteOverlayButton;
 @property (weak, nonatomic) IBOutlet MKMapView *mapView;
+@property (weak, nonatomic) IBOutlet UISegmentedControl *mapTypeSegmentedControl;
 
 - (IBAction)didTouchUpInsideDrawButton:(id)sender;
 - (IBAction)deleteOverlay:(id)sender;
+- (void) dibujarTodo:(int)numberOfPoints;
+- (IBAction)mapTypeChanged:(id)sender;
 
 
 @end
